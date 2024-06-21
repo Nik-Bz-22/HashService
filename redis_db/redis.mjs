@@ -9,11 +9,10 @@ class RedisClient {
             host: 'localhost',
             port: 6379})
         this.#arrayName = arrayName;
-        this.#client.set("key", 222222);
     }
 
     async get_N_hash(numHash=1){
-        console.log(numHash)
+        // console.log(numHash)
         return this.#client.srandmember(this.#arrayName, numHash);
     }
 
@@ -48,7 +47,7 @@ class RedisClient {
     async disconnectRedis(){
         try {
             this.#client.disconnect();
-            console.log("Disconnected success");
+            console.log("(Redis)Disconnected success");
             return true;
         }
         catch (err){ console.log(err); return false;}
@@ -59,4 +58,5 @@ class RedisClient {
     }
 
 }
+export default RedisClient;
 

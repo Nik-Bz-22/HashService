@@ -1,11 +1,19 @@
 import fastify from 'fastify';
-import { kv } from "@vercel/kv";
 import dotenv from 'dotenv';
 import hashGen from "./hashGen.js"
-// import DB from "./postgres_db/postgresql.mjs"
-// import sequelize from "./postgres_db/DBconection.js";
+import DB from "./postgres_db/postgresql.mjs"
+import redis from "./redis_db/redis.mjs"
+
+import utils from "./implemented_algs/extractingFromStorages/index.mjs"
 
 dotenv.config();
+
+/////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////
+
 
 const server = fastify();
 
@@ -15,20 +23,27 @@ server.get('/', async (request, reply) => {
 
 // request format {"tocken": 2345678, "count": 3}
 server.post('/getFreeHash', async (request, reply) => {
+    const needHashCount = request.body["count"];
+    const secTocken = request.body["tocken"];
 
-    const db = new DB(sequelize.sequelize);
-    const response = await db.get_unused_N_hash(request.body["count"]);
+    const redisClient = new redis()
 
-    const content = [];
-    response[0].forEach(async (it) => {content.push(it["hash"]);});
+    // if all you need hash is in redis
+    console.log(await redisClient.get_len_hash_list())
+    if (needHashCount <= await redisClient.get_len_hash_list()){
+        return utils.getFromRedis(redisClient, needHashCount);
+    }
 
-    // console.log(content);
-    // console.log(request.body["tocken"]);
-    return JSON.stringify(content);
 
+    // if isn`t in redis => get from db
+    const response = await utils.getFromDB(needHashCount);
+    const resp = response.response;
+    const newHash = response.secondHalf;
+    await redisClient.set_hash(newHash);
+    // await db.closeDB()
+
+    return JSON.stringify(resp);
 })
-
-
 
 
 const start = async () => {
