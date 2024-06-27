@@ -1,29 +1,33 @@
-import DB from "../../postgres_db/postgresql.mjs";
 import hashGen from "../../hashGen.js";
-import splitArray from "../splitArray/index.mjs"
 
-
-async function getFromDB(needHashCount) {
-    const db = new DB();
-
-    const response = await db.get_unused_N_hash(needHashCount);
-
-
-    const newHash = await hashGen.generateHashes(needHashCount);
-    const [firstHalf, secondHalf] = splitArray(newHash);
-
-    await db.insertToTable(firstHalf)
-    return  {response, secondHalf};
+async function getFromDB(inf, db) {
+    if (inf.currentState > inf.maxState){
+        const newHashs = hashGen.generateHashes(inf.currentState);
+        await db.insertToTable(await newHashs)
+        inf.currentState = 0;
+    }
+    const response = db.getUnusedHash();
+    ++inf.currentState;
+    return [await response];
 }
 
 
-async function getFromRedis(redisClient, needHashCount) {
-    const responseString = JSON.stringify(await redisClient.get_N_hash(needHashCount));
+async function getFromRedis(redisClient) {
+    const responseString = JSON.stringify(await redisClient.popHash());
     await redisClient.disconnectRedis();
+
     return responseString
 }
 
+async function fillRedis(count=1, redisClient, db){
+    const hashList = hashGen.generateHashes(count);
+    await db.insertToTable(await hashList, true);
+    await redisClient.setHash(await hashList);
+}
+
+
 export default {
     getFromDB,
-    getFromRedis
+    getFromRedis,
+    fillRedis
 }

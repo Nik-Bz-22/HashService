@@ -23,34 +23,31 @@ class DB {
         }
     }
 
-    async get_unused_N_hash(numOfHash = 1) {
+    async getUnusedHash(numOfHash = 1) {
         try {
-
-            const hash = (await this.#model.findAll({
+            const hash = (await this.#model.findOne({
                 where: {used: false},
-                limit: numOfHash
+            })).dataValues.hash;
 
-            })).map(d => d.dataValues.hash);
-
+            await this.updateOneHash(hash);
 
             return hash;
         } catch (err) {
-            console.error('Error fetching hashes:', err);
+            console.error('Error fetching hash:', err);
             throw err;
         }
     }
 
 
-    async insertToTable(objsToInsert=[]){
-        const objectList = objsToInsert.map(hash => ({ hash }));
+    async insertToTable(listToInsert=[], used=false){
+        const objectList = listToInsert.map(hash => ({ hash, used}));
         try {
-            const createdHashes = await this.#model.bulkCreate(objectList);
-            // console.log('Created hashes:', createdHashes.map(hash => hash.toJSON()));
+            await this.#model.bulkCreate(objectList);
+            return true;
 
         } catch (error) {
             console.error('Error creating hashes:', error);
         }
-
     }
 
     async getFullTable(){
@@ -69,6 +66,29 @@ class DB {
             return true;
         }
         catch (err){console.log("closee", err); return false;}
+    }
+
+    async getCountUnusedHash(){
+        const count = await this.#model.count({
+            where: {
+                used: false
+            }
+        });
+    }
+
+    async updateOneHash(hs='') {
+        try {
+            await this.#model.sequelize.authenticate();
+            console.log('Connection has been established successfully.');
+
+            const result = await this.#model.update({ used: true }, {
+                where: { hash: hs }
+            });
+
+            console.log(`Updated rows: ${result}`);
+        } catch (error) {
+            console.error('Unable to connect to the database:', error);
+        }
     }
 }
 
