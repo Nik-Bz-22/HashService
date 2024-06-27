@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-async function generateHashes(count, length = 8) {
+async function generateHashes(count=1, length = 8) {
     const uniqueHashes = new Set();
 
     while (uniqueHashes.size < count) {

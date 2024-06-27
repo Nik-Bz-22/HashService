@@ -1,19 +1,18 @@
-import createClient from 'ioredis';
+import CreateClient from 'ioredis';
 
 
 class RedisClient {
     #arrayName;
     #client;
     constructor(arrayName="hash") {
-        this.#client = new createClient({
+        this.#client = new CreateClient({
             host: 'localhost',
             port: 6379})
         this.#arrayName = arrayName;
     }
 
-    async get_N_hash(numHash=1){
-        // console.log(numHash)
-        return this.#client.srandmember(this.#arrayName, numHash);
+    async popHash(count=1){
+        return this.#client.spop(this.#arrayName, count);
     }
 
     async get_all_hash(){
@@ -22,7 +21,7 @@ class RedisClient {
 
     }
 
-    async set_hash(hashList=[]){
+    async setHash(hashList=[]){
         try{
             this.#client.sadd(this.#arrayName, hashList)
         }
@@ -58,5 +57,7 @@ class RedisClient {
     }
 
 }
+
+
 export default RedisClient;
 
