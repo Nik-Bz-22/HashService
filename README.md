@@ -32,21 +32,31 @@ HashService is a Node.js-based server that generates, stores, and manages hashes
     npm install
     ```
 
-3. Run the PostgreSQL and Redis servers.
-
-4. Initialize the databases:
-    Postgres:
+## Usage
+1. Run the PostgreSQL and Redis servers.
+    ### Postgres:
     ```sh
     psql -p 5400 -h 127.0.0.1 -U "root" -d hash_db
     ```
-    Redis:
+    ### Redis:
    ```sh
     redis-cli -p 6379 -h "localhost"
     ```
-
-## Usage
-
-To start the server, run:
+3. To start the server, run:
 
 ```sh
-npm start
+node index.mjs
+```
+
+## API Endpoints
+### Post requests
+1 To get hash:
+```sh
+    /getFreeHash
+```
+
+### Get requests
+1. To get status info:
+```sh
+    /
+```
