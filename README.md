@@ -50,7 +50,7 @@ node index.mjs
 
 ## API Endpoints
 ### Post requests
-1 To get hash:
+1. To get hash:
 ```sh
     /getFreeHash
 ```
